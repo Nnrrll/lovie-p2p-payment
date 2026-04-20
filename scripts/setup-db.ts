@@ -1,5 +1,5 @@
-import fs from 'node:fs';
 import { Client } from 'pg';
+import { applySchema } from '../src/db/bootstrap.js';
 
 const client = new Client(
   process.env.DATABASE_URL
@@ -19,8 +19,7 @@ const client = new Client(
 async function setupDatabase() {
   try {
     await client.connect();
-    const schema = fs.readFileSync('schema.sql', 'utf-8');
-    await client.query(schema);
+    await applySchema(client);
     console.log('Database schema applied successfully');
   } catch (error) {
     console.error('Error setting up the database:', error);

@@ -114,6 +114,8 @@ npm run build
 - A container-ready backend image is defined in [Dockerfile.api](./Dockerfile.api).
 - A Render blueprint for the API is included in [render.yaml](./render.yaml).
 - Production environment variables are documented in [.env.example](./.env.example).
+- On boot, the API now applies `schema.sql` automatically and seeds demo data only when the
+  database is empty.
 
 ### Frontend
 
@@ -121,6 +123,37 @@ npm run build
 - Frontend environment variables are documented in
   [frontend/.env.example](./frontend/.env.example).
 - Set `VITE_API_URL` to your deployed backend URL plus `/api/v1`.
+
+## Fast Deploy Checklist
+
+### 1. Deploy PostgreSQL and API on Render
+
+1. Create a managed PostgreSQL instance in Render.
+2. Create a new Web Service from this repository and point it to the repo root.
+3. Use the existing `render.yaml` or select `Dockerfile.api` as the runtime source.
+4. Set these environment variables:
+   - `DATABASE_URL=<Render Postgres internal or external URL>`
+   - `DATABASE_SSL=true`
+   - `CORS_ORIGIN=<your frontend url>`
+   - `APP_BASE_URL=<your frontend url>`
+5. Deploy once and verify:
+   - `GET /health`
+   - `GET /api/v1/auth/login` is not needed; use the app UI
+
+### 2. Deploy Frontend on Vercel
+
+1. Import the same GitHub repository into Vercel.
+2. Set the Root Directory to `frontend`.
+3. Set:
+   - `VITE_API_URL=https://<your-render-api-domain>/api/v1`
+4. Deploy and verify login with `alice@lovie.com`.
+
+### 3. Paste Final URLs
+
+- Replace the placeholder in `## Live Demo URL`
+- Add:
+  - frontend URL
+  - backend health URL
 
 ## Spec-Kit Usage
 

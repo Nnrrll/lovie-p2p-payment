@@ -130,6 +130,8 @@ blocked and the status is `EXPIRED`.
   decline, and cancel so the frontend can refresh from the server response without guessing state.
 - **FR-016**: The system MUST provide a seeded demo dataset and runbook so reviewers can validate
   all primary statuses locally.
+- **FR-017**: The hosted API MUST apply the schema at startup and seed demo data only when the
+  connected database is empty so public deployments remain reviewer-ready without manual SQL steps.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -163,3 +165,5 @@ blocked and the status is `EXPIRED`.
 - The repository keeps the backend at the root and the React client under `frontend/`.
 - The local verification baseline is `npm test`, root `npm run build`, frontend
   `npm run lint && npm run build`, and `npm run e2e`.
+- Hosted deployments may use a managed PostgreSQL database that starts empty, so bootstrap must be
+  safe and idempotent.

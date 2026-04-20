@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify';
 import pool from '../db/index.js';
+import { bootstrapDatabase } from '../db/bootstrap.js';
 import { AccountRepository } from '../repositories/account.repo.js';
 import { UserRepository } from '../repositories/user.repo.js';
 import { PaymentRequestService } from '../services/payment-request.service.js';
@@ -287,6 +288,12 @@ const app = createApp();
 
 export async function start() {
   const port = Number(process.env.PORT ?? '3000');
+  const seeded = await bootstrapDatabase();
+  if (seeded) {
+    app.log.info('Database bootstrap applied and demo data seeded');
+  } else {
+    app.log.info('Database bootstrap applied; existing data preserved');
+  }
   await app.listen({ port, host: '0.0.0.0' });
   return app;
 }

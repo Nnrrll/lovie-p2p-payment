@@ -109,6 +109,12 @@ Expected artifacts:
 - `tests/e2e/artifacts/summary.json`
 - `tests/e2e/artifacts/screenshots/`
 
+## Managed Deployment Note
+
+For hosted environments, the backend automatically applies `schema.sql` on startup and seeds demo
+data only if the database is empty. This keeps Render-style deployments reviewer-ready without
+requiring a manual SQL bootstrap step.
+
 ## 8. Optional API Walkthrough
 
 If the reviewer prefers API-first validation, use the contract examples from
