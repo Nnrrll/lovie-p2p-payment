@@ -1,0 +1,14 @@
+{
+  "artifacts": {
+    "screenshotsDir": "C:\\Users\\Nurel\\source\\repos\\lovie-p2p-payment\\tests\\e2e\\artifacts\\screenshots",
+    "videoPath": "C:\\Users\\Nurel\\source\\repos\\lovie-p2p-payment\\tests\\e2e\\artifacts\\lovie-e2e-recording.webm"
+  },
+  "finishedAt": "2026-04-20T22:29:12.019Z",
+  "startedAt": "2026-04-20T22:28:23.127Z",
+  "steps": [
+    "Alice created a new request for Bob",
+    "Bob paid the first request",
+    "Bob declined the second request",
+    "Alice opened an expired request detail and confirmed actions were blocked"
+  ]
+}

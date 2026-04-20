@@ -1,0 +1,62 @@
+name: CI - Spec & E2E
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  verify-and-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Verify spec-kit files exist
+        run: node ./scripts/verify-specs.js
+
+      - name: Start Postgres (docker-compose)
+        run: docker compose up -d db
+
+      - name: Build backend
+        run: npm run build
+
+      - name: Apply DB schema
+        run: node dist/scripts/setup-db.js
+
+      - name: Seed DB
+        run: node dist/scripts/seed-db.js
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Install Chrome (for CDP)
+        uses: browser-actions/setup-chrome@v2
+
+      - name: Run E2E & capture artifacts
+        env:
+          CHROME_PATH: /usr/bin/google-chrome-stable
+        run: node tests/e2e/run-e2e.js
+
+      - name: Upload E2E artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: tests/e2e/artifacts

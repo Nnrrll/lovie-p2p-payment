@@ -1,0 +1,159 @@
+# Lovie P2P Payment Request
+
+Spec-Kit-driven implementation of the Lovie first interview assignment. The repo now contains a
+working Fastify and PostgreSQL backend, a React and Vite frontend that covers the full request
+money flow, automated backend verification, and a reviewer-friendly documentation package under
+`specs/001-p2p-payment-request/`.
+
+## Project Overview
+
+This build implements:
+
+- Mock email authentication with session-scoped persistence
+- Payment request creation with email or phone recipient lookup
+- Incoming and outgoing dashboards with search and status filters
+- Request detail view with pay, decline, and cancel actions
+- Simulated payment processing with delayed confirmation
+- Seven-day expiration handling and countdown display
+- PostgreSQL-backed state with atomic balance updates
+
+## Live Demo URL
+
+Public deployment still has to be done from your own Vercel and Render or Railway accounts.
+Deployment-ready files and environment examples are included below so you can publish quickly and
+then paste the final public URLs here.
+
+## Local Setup
+
+### 1. Start PostgreSQL
+
+```powershell
+docker compose up -d db
+```
+
+### 2. Install dependencies
+
+```powershell
+npm install
+Set-Location frontend
+npm install
+Set-Location ..
+```
+
+### 3. Prepare the database
+
+```powershell
+npm run db:setup
+npm run db:seed
+```
+
+### 4. Start the backend
+
+```powershell
+$env:CORS_ORIGIN = 'http://localhost:5173'
+$env:APP_BASE_URL = 'http://localhost:5173'
+npm run dev
+```
+
+### 5. Start the frontend
+
+```powershell
+Set-Location frontend
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`, with the API at `http://localhost:3000`.
+
+## Demo Users
+
+- `alice@lovie.com`
+- `bob@lovie.com`
+- `charlie@lovie.com`
+- `denise@lovie.com`
+
+All users are seeded automatically by `npm run db:seed`.
+
+## Test Commands
+
+Backend verification:
+
+```powershell
+npm test
+```
+
+Automated E2E flow with video artifact:
+
+```powershell
+npm run e2e
+```
+
+Generated artifacts:
+
+- `tests/e2e/artifacts/lovie-e2e-recording.webm`
+- `tests/e2e/artifacts/summary.json`
+- `tests/e2e/artifacts/screenshots/`
+
+Root TypeScript build:
+
+```powershell
+npm run build
+```
+
+Frontend lint and build:
+
+```powershell
+Set-Location frontend
+npm run lint
+npm run build
+```
+
+## Deployment Notes
+
+### Backend
+
+- A container-ready backend image is defined in [Dockerfile.api](./Dockerfile.api).
+- A Render blueprint for the API is included in [render.yaml](./render.yaml).
+- Production environment variables are documented in [.env.example](./.env.example).
+
+### Frontend
+
+- A Vercel SPA config is included in [frontend/vercel.json](./frontend/vercel.json).
+- Frontend environment variables are documented in
+  [frontend/.env.example](./frontend/.env.example).
+- Set `VITE_API_URL` to your deployed backend URL plus `/api/v1`.
+
+## Spec-Kit Usage
+
+This repository was initialized locally with the official GitHub Spec-Kit CLI from the
+`github/spec-kit` source and is configured for Codex integration.
+
+Local initialization command used:
+
+```powershell
+specify init --here --force --integration codex --script ps --offline
+```
+
+The resulting Spec-Kit infrastructure now exists in:
+
+- `.specify/`
+- `.specify/workflows/speckit/workflow.yml`
+- `.specify/scripts/powershell/`
+- `.agents/skills/speckit-*`
+- `.specify/init-options.json`
+
+## Spec-Kit Artifacts
+
+- Constitution: [`.specify/memory/constitution.md`](./.specify/memory/constitution.md)
+- Feature spec: [`specs/001-p2p-payment-request/spec.md`](./specs/001-p2p-payment-request/spec.md)
+- Plan: [`specs/001-p2p-payment-request/plan.md`](./specs/001-p2p-payment-request/plan.md)
+- Tasks: [`specs/001-p2p-payment-request/tasks.md`](./specs/001-p2p-payment-request/tasks.md)
+- Research: [`specs/001-p2p-payment-request/research.md`](./specs/001-p2p-payment-request/research.md)
+- Data model: [`specs/001-p2p-payment-request/data-model.md`](./specs/001-p2p-payment-request/data-model.md)
+- Quickstart: [`specs/001-p2p-payment-request/quickstart.md`](./specs/001-p2p-payment-request/quickstart.md)
+- OpenAPI contract:
+  [`specs/001-p2p-payment-request/contracts/openapi.yaml`](./specs/001-p2p-payment-request/contracts/openapi.yaml)
+
+## AI Workflow
+
+The process write-up for the assignment, including spec-first iteration, agent usage, and
+verification strategy, is in [AI_WORKFLOW.md](./AI_WORKFLOW.md).

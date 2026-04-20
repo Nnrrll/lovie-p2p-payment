@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+frontend/dist/
+coverage/
+*.tsbuildinfo
+
+# Local tooling
+.vs/
+.tmp/
+.claude/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# E2E transient browser state
+tests/e2e/artifacts/chrome-profile/
+tests/e2e/chrome-smoke-profile/
+
+# Root-level generated helper outputs
+db_verify.js
+db_verify.js.map
+db_verify.d.ts
+db_verify.d.ts.map
+poc_atomic_transfer.js
+poc_atomic_transfer.js.map
+poc_atomic_transfer.d.ts
+poc_atomic_transfer.d.ts.map
+
+# Generated TypeScript helper outputs kept outside source control
+scripts/*.d.ts
+scripts/*.d.ts.map
+scripts/setup-db.js
+scripts/seed-db.js
+scripts/*.js.map
+frontend/vite.config.js
+frontend/vite.config.d.ts
+frontend/vite.config.d.ts.map
+frontend/vite.config.js.map

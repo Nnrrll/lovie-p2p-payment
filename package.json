@@ -1,0 +1,39 @@
+{
+  "name": "lovie-p2p-payment",
+  "version": "1.0.0",
+  "description": "P2P payment request feature for the Lovie assignment",
+  "main": "dist/src/app/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/app/index.ts",
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "start": "node dist/src/app/index.js",
+    "test": "vitest run --pool=threads --maxWorkers=1",
+    "test:watch": "vitest --pool=threads --maxWorkers=1",
+    "e2e": "node tests/e2e/run-e2e.js",
+    "db:setup": "tsx scripts/setup-db.ts",
+    "db:seed": "tsx scripts/seed-db.ts"
+  },
+  "keywords": [
+    "p2p",
+    "payment",
+    "fintech",
+    "lovie"
+  ],
+  "author": "Nurel",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^5.8.5",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/pg": "^8.20.0",
+    "@types/supertest": "^7.2.0",
+    "supertest": "^7.2.2",
+    "tsx": "^4.19.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.4"
+  }
+}

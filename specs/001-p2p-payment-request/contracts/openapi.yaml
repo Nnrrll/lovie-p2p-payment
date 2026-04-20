@@ -1,0 +1,543 @@
+openapi: 3.1.0
+info:
+  title: Lovie P2P Payment Request API
+  version: 1.0.0
+  description: >
+    Contract for the Lovie assignment build. The backend is a Fastify service backed by PostgreSQL
+    and uses mock email login with in-memory bearer sessions.
+servers:
+  - url: http://localhost:3000
+    description: Local Fastify server
+tags:
+  - name: Health
+  - name: Auth
+  - name: Payment Requests
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Check API availability
+      operationId: getHealth
+      responses:
+        '200':
+          description: API is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in with an email address
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid email format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: Fetch the authenticated user and account
+      operationId: getMe
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Authenticated user context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthMeResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/payment-requests:
+    post:
+      tags: [Payment Requests]
+      summary: Create a new payment request
+      operationId: createPaymentRequest
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequestRequest'
+      responses:
+        '201':
+          description: Payment request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRequestDetails'
+        '400':
+          description: Validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recipient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/payment-requests/outgoing:
+    get:
+      tags: [Payment Requests]
+      summary: List requests created by the current user
+      operationId: listOutgoingPaymentRequests
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/StatusParam'
+        - $ref: '#/components/parameters/SearchParam'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Paginated outgoing request list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRequestList'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/payment-requests/incoming:
+    get:
+      tags: [Payment Requests]
+      summary: List requests assigned to the current user
+      operationId: listIncomingPaymentRequests
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/StatusParam'
+        - $ref: '#/components/parameters/SearchParam'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Paginated incoming request list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRequestList'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/payment-requests/{requestId}:
+    get:
+      tags: [Payment Requests]
+      summary: Fetch request detail for one participating user
+      operationId: getPaymentRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestIdParam'
+      responses:
+        '200':
+          description: Request detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRequestDetails'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Request not found for the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/payment-requests/{requestId}/pay:
+    post:
+      tags: [Payment Requests]
+      summary: Pay a pending incoming request
+      operationId: payPaymentRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestIdParam'
+      responses:
+        '200':
+          description: Request was paid successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRequestDetails'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Authenticated user is not the assigned recipient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Insufficient funds or invalid request state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/payment-requests/{requestId}/decline:
+    post:
+      tags: [Payment Requests]
+      summary: Decline a pending incoming request
+      operationId: declinePaymentRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestIdParam'
+      responses:
+        '200':
+          description: Request was declined successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRequestDetails'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Authenticated user is not the assigned recipient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Request is no longer actionable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/payment-requests/{requestId}/cancel:
+    post:
+      tags: [Payment Requests]
+      summary: Cancel a pending outgoing request
+      operationId: cancelPaymentRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestIdParam'
+      responses:
+        '200':
+          description: Request was cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentRequestDetails'
+        '401':
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Authenticated user is not the requester
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Request is no longer actionable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: UUID session token
+  parameters:
+    RequestIdParam:
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    StatusParam:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [ALL, PENDING, PAID, DECLINED, EXPIRED, CANCELLED]
+    SearchParam:
+      name: search
+      in: query
+      required: false
+      schema:
+        type: string
+    PageParam:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 20
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, app_base_url, time]
+      properties:
+        status:
+          type: string
+          example: ok
+        app_base_url:
+          type: string
+          format: uri
+          example: http://localhost:5173
+        time:
+          type: string
+          format: date-time
+    LoginRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          example: alice@lovie.com
+    UserSummary:
+      type: object
+      required: [user_id, email, phone]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          example: +15555550101
+    Account:
+      type: object
+      required: [account_id, user_id, balance, currency, version, updated_at]
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        balance:
+          type: number
+          multipleOf: 0.01
+          example: 1250
+        currency:
+          type: string
+          example: USD
+        version:
+          type: integer
+          example: 2
+        updated_at:
+          type: string
+          format: date-time
+    LoginResponse:
+      type: object
+      required: [user, session_token]
+      properties:
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        session_token:
+          type: string
+          format: uuid
+    AuthMeResponse:
+      type: object
+      required: [user, account]
+      properties:
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        account:
+          $ref: '#/components/schemas/Account'
+    CreatePaymentRequestRequest:
+      type: object
+      required: [recipient_identifier, amount]
+      properties:
+        recipient_identifier:
+          type: string
+          description: Existing recipient email or phone number
+          example: bob@lovie.com
+        amount:
+          type: number
+          multipleOf: 0.01
+          minimum: 0.01
+          maximum: 999999.99
+          example: 42.5
+        currency:
+          type: string
+          default: USD
+          example: USD
+        memo:
+          type:
+            - string
+            - 'null'
+          maxLength: 280
+          example: Dinner split
+    PaymentRequestStatus:
+      type: string
+      enum: [PENDING, PAID, DECLINED, EXPIRED, CANCELLED]
+    PaymentRequestDetails:
+      type: object
+      required:
+        - request_id
+        - requester_id
+        - recipient_id
+        - amount
+        - currency
+        - status
+        - created_at
+        - updated_at
+        - expires_at
+        - requester
+        - recipient
+        - shareable_link
+        - is_expired
+        - expires_in_seconds
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        requester_id:
+          type: string
+          format: uuid
+        recipient_id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          multipleOf: 0.01
+          example: 42.5
+        currency:
+          type: string
+          example: USD
+        status:
+          $ref: '#/components/schemas/PaymentRequestStatus'
+        memo:
+          type:
+            - string
+            - 'null'
+          example: Dinner split
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        requester:
+          $ref: '#/components/schemas/UserSummary'
+        recipient:
+          $ref: '#/components/schemas/UserSummary'
+        shareable_link:
+          type: string
+          format: uri
+          description: >
+            Generated from APP_BASE_URL. The route is reserved for the React client even if the
+            browser UI is still under active implementation.
+        is_expired:
+          type: boolean
+        expires_in_seconds:
+          type: integer
+          minimum: 0
+    PaymentRequestList:
+      type: object
+      required: [requests, total, page, limit]
+      properties:
+        requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentRequestDetails'
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: Unauthorized
