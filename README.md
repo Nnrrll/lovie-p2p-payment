@@ -108,6 +108,10 @@ Generated artifacts:
 - `tests/e2e/artifacts/summary.json`
 - `tests/e2e/artifacts/screenshots/`
 
+Submission screen recording with assignment feature overlays:
+
+- `Lovie-Submission-Screen-Recording.webm`
+
 Root TypeScript build:
 
 ```powershell

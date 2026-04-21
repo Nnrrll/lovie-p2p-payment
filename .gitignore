@@ -27,6 +27,9 @@ pnpm-debug.log*
 
 # Local-only submission helper
 FINAL_SUBMISSION_EMAIL.md
+scripts/create-submission-walkthrough.mjs
+submission-ffmpeg-preview.png
+timing-preview-*.png
 
 # E2E transient browser state
 tests/e2e/artifacts/chrome-profile/
