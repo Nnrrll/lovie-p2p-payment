@@ -14,6 +14,17 @@
 - `scripts/` owns local database setup and seeding.
 - `tests/` contains repository-native verification for backend behavior.
 
+## Agent Roles Used
+
+- Primary coding agent: owned the main implementation, verification, deployment alignment, and
+  final documentation updates.
+- Explorer-style agents: used for bounded repo inspection, gap analysis, and targeted codebase
+  discovery.
+- Worker-style agents: used for focused implementation or documentation scaffolding when a bounded
+  subtask could be isolated safely.
+- Spec-Kit-installed skills under `.agents/skills/`: provided the reusable agent workflows for
+  specify, plan, tasks, analyze, implement, and related git support commands.
+
 ## Working Rules
 
 - Start from `spec.md`, then `plan.md`, then `tasks.md` before changing scope.
