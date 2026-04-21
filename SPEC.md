@@ -2,12 +2,13 @@
 
 ## Implementation Status
 
-As of 2026-04-20, this repository contains a working local implementation of the assignment:
+As of 2026-04-21, this repository contains a working local and deployed implementation of the assignment:
 
 - Fastify and PostgreSQL backend with mock email auth and atomic payment settlement
 - React and Vite frontend with login, request creation, incoming and outgoing dashboards, request
   detail view, pay, decline, cancel, and expiry countdown behavior
 - Automated backend verification via `npm test`
+- Public frontend deployment on Vercel and public backend deployment on Render
 - Spec-Kit-style active source of truth under `specs/001-p2p-payment-request/`
 
 Treat [`specs/001-p2p-payment-request/spec.md`](./specs/001-p2p-payment-request/spec.md) as the
@@ -70,5 +71,5 @@ frontend app in `frontend/`.
 
 ## Submission Notes
 
-The remaining submission-specific task outside the repo is deploying the backend and frontend to
-public URLs under your own accounts and, if needed, attaching a reviewer-facing demo video or link.
+The repository now contains the public repo, live demo URL, reviewer-facing E2E recording artifact,
+and the supporting submission docs needed for the assignment handoff.

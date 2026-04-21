@@ -2,7 +2,7 @@
 
 **Feature Branch**: `[001-p2p-payment-request]`  
 **Created**: 2026-04-20  
-**Status**: Implemented and verified locally  
+**Status**: Implemented, verified, and deployed  
 **Input**: User description: "Deliver the Lovie assignment as a serious Spec-Kit-driven P2P payment request submission on the existing Node/Fastify/React/Postgres repository."
 
 ## User Scenarios & Testing *(mandatory)*
