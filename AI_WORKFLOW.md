@@ -80,7 +80,8 @@ Examples from this repo:
 - Official GitHub Spec-Kit templates were cloned locally and adapted into `.specify/` and `specs/`.
 - MCP discovery was attempted, but no MCP resources were available in this session.
 - Frontend state uses custom React hooks in `frontend/src/hooks/`.
-- E2E video automation was started separately, but was intentionally deprioritized for this pass.
+- E2E coverage was completed with a custom browser runner and reviewer-facing video artifacts in
+  `tests/e2e/artifacts/`.
 
 ## AI Prompt Themes
 

@@ -19,9 +19,8 @@ This build implements:
 
 ## Live Demo URL
 
-Public deployment still has to be done from your own Vercel and Render or Railway accounts.
-Deployment-ready files and environment examples are included below so you can publish quickly and
-then paste the final public URLs here.
+- Frontend: `https://lovie-p2p-payment-beige.vercel.app`
+- Backend health: `https://lovie-p2p-payment-api.onrender.com/health`
 
 ## Local Setup
 
@@ -148,12 +147,10 @@ npm run build
    - `VITE_API_URL=https://<your-render-api-domain>/api/v1`
 4. Deploy and verify login with `alice@lovie.com`.
 
-### 3. Paste Final URLs
+### 3. Final URLs
 
-- Replace the placeholder in `## Live Demo URL`
-- Add:
-  - frontend URL
-  - backend health URL
+- Frontend URL is `https://lovie-p2p-payment-beige.vercel.app`
+- Backend health URL is `https://lovie-p2p-payment-api.onrender.com/health`
 
 ## Spec-Kit Usage
 
@@ -190,3 +187,35 @@ The resulting Spec-Kit infrastructure now exists in:
 
 The process write-up for the assignment, including spec-first iteration, agent usage, and
 verification strategy, is in [AI_WORKFLOW.md](./AI_WORKFLOW.md).
+
+## How It Was Built
+
+This project was delivered with an AI-assisted, spec-driven workflow rather than a single
+monolithic prompt. The repo was first aligned to the assignment requirements, then implemented and
+verified in small checkpoints so each layer was working before moving on to the next one.
+
+### AI Tools Used
+
+- Codex CLI as the primary agentic coding environment
+- Official GitHub Spec-Kit / Specify CLI for local Spec-Kit initialization and workflow assets
+- GitHub for public source delivery
+- Render and Vercel for live deployment
+
+### Prompt Themes
+
+The work was guided by short task-level prompts such as:
+
+- Audit the existing brownfield repo against the Lovie assignment
+- Convert the repo into a Spec-Kit-aligned delivery package
+- Repair backend contract, validation, and payment lifecycle correctness
+- Build the request dashboard, detail flows, and expiration behavior on the frontend
+- Rewrite tests and E2E automation around the real API contract
+- Align docs, deployment config, and submission artifacts with the final implementation
+
+### Working Style
+
+- Start from `spec.md`, then `plan.md`, then `tasks.md`
+- Validate each small unit before moving to the next larger milestone
+- Treat AI output as draft implementation, not final truth
+- Fix hallucinated or broken code paths before expanding scope
+- Keep docs, contract files, and runtime behavior in sync
