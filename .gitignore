@@ -25,6 +25,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Local-only submission helper
+FINAL_SUBMISSION_EMAIL.md
+
 # E2E transient browser state
 tests/e2e/artifacts/chrome-profile/
 tests/e2e/chrome-smoke-profile/
