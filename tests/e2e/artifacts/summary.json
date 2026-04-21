@@ -3,12 +3,16 @@
     "screenshotsDir": "C:\\Users\\Nurel\\source\\repos\\lovie-p2p-payment\\tests\\e2e\\artifacts\\screenshots",
     "videoPath": "C:\\Users\\Nurel\\source\\repos\\lovie-p2p-payment\\tests\\e2e\\artifacts\\lovie-e2e-recording.webm"
   },
-  "finishedAt": "2026-04-20T22:29:12.019Z",
-  "startedAt": "2026-04-20T22:28:23.127Z",
+  "finishedAt": "2026-04-21T19:08:45.249Z",
+  "startedAt": "2026-04-21T19:08:02.852Z",
   "steps": [
-    "Alice created a new request for Bob",
-    "Bob paid the first request",
-    "Bob declined the second request",
+    "Alice signed in and reviewed separate incoming and outgoing dashboards",
+    "Alice created a request for Bob and verified the shareable link",
+    "Alice demonstrated outgoing search and status filtering",
+    "Alice opened the detail view and reviewed amount, note, participants, and expiration data",
+    "Bob paid the incoming request after the simulated processing delay",
+    "Bob declined a second incoming request from the dashboard",
+    "Alice cancelled a pending outgoing request from the detail view",
     "Alice opened an expired request detail and confirmed actions were blocked"
   ]
 }

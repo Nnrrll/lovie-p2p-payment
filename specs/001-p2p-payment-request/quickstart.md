@@ -65,10 +65,12 @@ Open `http://localhost:5173`.
 
 1. Log in as `alice@lovie.com`
 2. Create a request to `bob@lovie.com` for `24.50`
-3. Sign out
-4. Log in as `bob@lovie.com`
-5. Pay the request from the Incoming queue
-6. Open the detail view and confirm the final status is `PAID`
+3. Confirm the generated request exposes a shareable link in the detail screen
+4. Use outgoing search and status filtering on Alice's dashboard
+5. Sign out
+6. Log in as `bob@lovie.com`
+7. Pay the request from the Incoming queue
+8. Open the detail view and confirm the final status is `PAID`
 
 ### Flow B: Decline a request
 
@@ -79,12 +81,21 @@ Open `http://localhost:5173`.
 5. Decline the request from the Incoming queue
 6. Confirm the status becomes `DECLINED`
 
-### Flow C: Expired request review
+### Flow C: Cancel a pending outgoing request
 
 1. Log in as `alice@lovie.com`
-2. Open the outgoing or incoming request created by Denise with memo `Groceries`
+2. Create a request to `bob@lovie.com` for any valid amount
+3. Open the request detail view from the Outgoing queue
+4. Use `Cancel`
+5. Confirm the status becomes `CANCELLED`
+
+### Flow D: Expired request review
+
+1. Log in as `alice@lovie.com`
+2. Open the outgoing or incoming request created by Denise with memo `Expired demo request`
 3. Confirm the status is `EXPIRED`
-4. Confirm Pay and Decline actions are not available
+4. Confirm the expiration countdown is no longer active
+5. Confirm Pay and Decline actions are not available
 
 ## 7. Automated Verification
 
@@ -124,7 +135,12 @@ Manual smoke verification completed on the public deployment for:
 
 - login
 - request creation
+- shareable link visibility
+- outgoing search and status filtering
 - successful pay flow with final `PAID` status
+- decline flow
+- cancel flow
+- expired request review
 
 ## 8. Optional API Walkthrough
 

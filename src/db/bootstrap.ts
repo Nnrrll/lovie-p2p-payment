@@ -90,7 +90,7 @@ export async function seedDemoDataIfEmpty(db: DbClient = pool) {
   await db.query(
     `
       INSERT INTO payment_requests (requester_id, recipient_id, amount, currency, status, memo, created_at, expires_at)
-      VALUES ($1, $2, 55.00, 'USD', 'EXPIRED', 'Groceries', $3, $4)
+      VALUES ($1, $2, 55.00, 'USD', 'EXPIRED', 'Expired demo request', $3, $4)
     `,
     [userIds.get('denise@lovie.com'), userIds.get('alice@lovie.com'), tenDaysAgo, threeDaysAgo],
   );

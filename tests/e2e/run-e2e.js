@@ -8,13 +8,22 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..', '..');
 const frontendDir = path.join(rootDir, 'frontend');
-const artifactsDir = path.join(rootDir, 'tests', 'e2e', 'artifacts');
+const runOffset = Number(process.env.E2E_PORT_OFFSET ?? String(process.pid % 1000));
+const backendPortNumber = 43000 + (runOffset % 500);
+const frontendPortNumber = 44000 + (runOffset % 500);
+const chromeDebugPort = 9300 + (runOffset % 200);
+const backendUrl = `http://127.0.0.1:${backendPortNumber}`;
+const frontendUrl = `http://127.0.0.1:${frontendPortNumber}`;
+const stopAfterStep = process.env.E2E_STOP_AFTER ?? '';
+const skipVideoEncoding = process.env.E2E_SKIP_VIDEO === '1';
+const presentationMode = process.env.E2E_PRESENTATION_MODE === '1';
+const isTargetedRun = skipVideoEncoding || stopAfterStep.trim() !== '';
+const artifactsDir = isTargetedRun
+  ? path.join(rootDir, 'tests', 'e2e', 'artifacts-temp', `run-${runOffset}`)
+  : path.join(rootDir, 'tests', 'e2e', 'artifacts');
 const screenshotsDir = path.join(artifactsDir, 'screenshots');
 const chromeUserDataDir = path.join(artifactsDir, 'chrome-profile');
 const runLogPath = path.join(rootDir, 'tests', 'e2e', 'last-run.log');
-const backendUrl = 'http://127.0.0.1:3100';
-const frontendUrl = 'http://127.0.0.1:4173';
-const chromeDebugPort = 9222;
 // Allow overriding chrome binary via env (useful for CI) and use platform sensible defaults
 const chromePath = process.env.CHROME_PATH || (process.platform === 'win32'
   ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
@@ -22,8 +31,11 @@ const chromePath = process.env.CHROME_PATH || (process.platform === 'win32'
 const scenarioNotes = {
   pay: 'E2E pay flow',
   decline: 'E2E decline flow',
-  expired: 'Groceries',
+  cancel: 'E2E cancel flow',
+  expired: 'Expired demo request',
 };
+const backendPort = new URL(backendUrl).port;
+const frontendPort = new URL(frontendUrl).port;
 
 function logStep(message) {
   const line = `[e2e] ${new Date().toISOString()} ${message}`;
@@ -328,6 +340,89 @@ async function clickInCard(client, cardText, controlText) {
   }
 }
 
+async function setSelectValue(client, selector, value) {
+  const result = await client.evaluate(`
+    (() => {
+      const element = document.querySelector(${stringify(selector)});
+      if (!(element instanceof HTMLSelectElement)) return false;
+      element.value = ${stringify(value)};
+      element.dispatchEvent(new Event('input', { bubbles: true }));
+      element.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    })()
+  `);
+
+  if (!result) {
+    throw new Error(`Could not set select ${selector}`);
+  }
+}
+
+async function showOverlay(client, title, body) {
+  if (!presentationMode) {
+    return;
+  }
+
+  await client.evaluate(`
+    (() => {
+      const existing = document.getElementById('e2e-overlay');
+      if (existing) existing.remove();
+      const overlay = document.createElement('div');
+      overlay.id = 'e2e-overlay';
+      overlay.innerHTML = '<strong></strong><span></span>';
+      Object.assign(overlay.style, {
+        position: 'fixed',
+        top: '18px',
+        right: '18px',
+        zIndex: '999999',
+        width: '360px',
+        padding: '14px 16px',
+        borderRadius: '16px',
+        background: 'rgba(9, 16, 27, 0.9)',
+        color: '#f5f7fb',
+        boxShadow: '0 18px 50px rgba(0, 0, 0, 0.35)',
+        border: '1px solid rgba(255,255,255,0.16)',
+        fontFamily: 'Segoe UI, Arial, sans-serif',
+        lineHeight: '1.45',
+      });
+      overlay.querySelector('strong').textContent = ${stringify(title)};
+      Object.assign(overlay.querySelector('strong').style, {
+        display: 'block',
+        marginBottom: '6px',
+        fontSize: '15px',
+      });
+      overlay.querySelector('span').textContent = ${stringify(body)};
+      Object.assign(overlay.querySelector('span').style, {
+        display: 'block',
+        fontSize: '13px',
+        opacity: '0.92',
+      });
+      document.body.appendChild(overlay);
+      return true;
+    })()
+  `);
+}
+
+async function clearOverlay(client) {
+  if (!presentationMode) {
+    return;
+  }
+
+  await client.evaluate(`
+    (() => {
+      document.getElementById('e2e-overlay')?.remove();
+      return true;
+    })()
+  `);
+}
+
+function shouldStopAfter(stepId) {
+  return stopAfterStep.trim().toLowerCase() === stepId.toLowerCase();
+}
+
+function pace(ms) {
+  return presentationMode ? ms : Math.max(120, Math.round(ms / 4));
+}
+
 async function loginAs(client, email) {
   logStep(`Logging in as ${email}`);
   await client.waitFor(`document.body.innerText.includes('Mock magic-link entry')`);
@@ -367,38 +462,159 @@ async function createRequest(client, recipient, amount, memo) {
 }
 
 async function recordScenario(client) {
+  const completedSteps = [];
+
+  await showOverlay(
+    client,
+    'Step 1: Mock email login and dashboard',
+    'Alice signs in, opens the dashboard, and sees separate incoming and outgoing queues.',
+  );
   logStep('Capturing initial Alice dashboard');
   await loginAs(client, 'alice@lovie.com');
-  await wait(1_200);
+  await wait(pace(2_200));
   await client.captureScreenshot('01-alice-dashboard.png');
+  completedSteps.push('Alice signed in and reviewed separate incoming and outgoing dashboards');
+  if (shouldStopAfter('dashboard')) {
+    await clearOverlay(client);
+    return completedSteps;
+  }
 
+  await showOverlay(
+    client,
+    'Step 2: Create request with shareable link',
+    'Alice creates a request for Bob. The app validates input and generates a shareable link.',
+  );
   await createRequest(client, 'bob@lovie.com', '24.50', scenarioNotes.pay);
-  await wait(1_500);
+  await client.waitFor(`document.body.innerText.includes('Copy link')`);
+  await wait(pace(2_000));
   await client.captureScreenshot('02-created-pay-request.png');
+  completedSteps.push('Alice created a request for Bob and verified the shareable link');
+  if (shouldStopAfter('create')) {
+    await clearOverlay(client);
+    return completedSteps;
+  }
 
+  await showOverlay(
+    client,
+    'Step 3: Search and filter outgoing requests',
+    'The dashboard supports recipient search and status filtering for outgoing requests.',
+  );
+  await setField(client, 'input[aria-label="Search outgoing requests"]', 'bob@lovie.com');
+  await wait(pace(900));
+  await setSelectValue(client, '.lists-grid section.panel:nth-of-type(2) select', 'PENDING');
+  await client.waitFor(`document.body.innerText.includes(${stringify(scenarioNotes.pay)})`);
+  await wait(pace(1_600));
+  await setField(client, 'input[aria-label="Search outgoing requests"]', '');
+  await setSelectValue(client, '.lists-grid section.panel:nth-of-type(2) select', 'ALL');
+  await wait(pace(900));
+  completedSteps.push('Alice demonstrated outgoing search and status filtering');
+  if (shouldStopAfter('filter')) {
+    await clearOverlay(client);
+    return completedSteps;
+  }
+
+  await showOverlay(
+    client,
+    'Step 4: Request detail view',
+    'Alice opens the detail page to verify amount, note, participants, expiration countdown, and shareable link.',
+  );
+  await clickInCard(client, scenarioNotes.pay, 'View details');
+  await client.waitFor(`document.querySelector('.detail-panel') !== null`);
+  await client.waitFor(`document.body.innerText.includes(${stringify(scenarioNotes.pay)})`);
+  await wait(pace(2_200));
+  await clickByText(client, 'Back to dashboard');
+  await client.waitFor(`document.querySelector('[data-testid="request-form"]') !== null`);
+  completedSteps.push('Alice opened the detail view and reviewed amount, note, participants, and expiration data');
+  if (shouldStopAfter('detail')) {
+    await clearOverlay(client);
+    return completedSteps;
+  }
+
+  await showOverlay(
+    client,
+    'Step 5: Incoming pay action with loading state',
+    'Bob opens the incoming request and pays it after the simulated 2-3 second processing delay.',
+  );
   logStep('Switching to Bob for pay flow');
   await clickByText(client, 'Sign out');
   await loginAs(client, 'bob@lovie.com');
+  await clickInCard(client, scenarioNotes.pay, 'View details');
+  await client.waitFor(`document.querySelector('.detail-panel') !== null`);
+  await client.waitFor(`document.body.innerText.includes('Pay request')`);
+  await wait(pace(1_800));
+  await clickByText(client, 'Back to dashboard');
+  await client.waitFor(`document.querySelector('[data-testid="request-form"]') !== null`);
+  await client.waitFor(`document.body.innerText.includes(${stringify(scenarioNotes.pay)})`);
+  await wait(pace(1_000));
   await clickInCard(client, scenarioNotes.pay, 'Pay');
+  await client.waitFor(`document.body.innerText.includes('Processing...')`);
   await client.waitFor(`document.body.innerText.includes('Payment settled successfully')`);
-  await wait(1_500);
+  await wait(pace(2_000));
   await client.captureScreenshot('03-bob-paid-request.png');
+  completedSteps.push('Bob paid the incoming request after the simulated processing delay');
+  if (shouldStopAfter('pay')) {
+    await clearOverlay(client);
+    return completedSteps;
+  }
 
+  await showOverlay(
+    client,
+    'Step 6: Decline from incoming dashboard',
+    'Bob can also decline an incoming request directly from the dashboard.',
+  );
   logStep('Running decline flow');
   await clickByText(client, 'Sign out');
   await loginAs(client, 'alice@lovie.com');
   await createRequest(client, 'bob@lovie.com', '17.20', scenarioNotes.decline);
-  await wait(1_000);
+  await wait(pace(1_500));
   await clickByText(client, 'Sign out');
   await loginAs(client, 'bob@lovie.com');
+  await client.waitFor(`document.body.innerText.includes(${stringify(scenarioNotes.decline)})`);
+  await wait(pace(1_000));
   await clickInCard(client, scenarioNotes.decline, 'Decline');
   await client.waitFor(`document.body.innerText.includes('Request declined.')`);
-  await wait(1_500);
+  await wait(pace(2_000));
   await client.captureScreenshot('04-bob-declined-request.png');
+  completedSteps.push('Bob declined a second incoming request from the dashboard');
+  if (shouldStopAfter('decline')) {
+    await clearOverlay(client);
+    return completedSteps;
+  }
 
-  logStep('Checking expired request detail');
+  await showOverlay(
+    client,
+    'Step 7: Cancel pending outgoing request',
+    'Alice can open a pending outgoing request and cancel it from the detail page.',
+  );
   await clickByText(client, 'Sign out');
   await loginAs(client, 'alice@lovie.com');
+  await createRequest(client, 'bob@lovie.com', '11.10', scenarioNotes.cancel);
+  await wait(pace(1_500));
+  await client.waitFor(`document.body.innerText.includes(${stringify(scenarioNotes.cancel)})`);
+  await wait(pace(1_000));
+  await clickInCard(client, scenarioNotes.cancel, 'View details');
+  await client.waitFor(`document.querySelector('.detail-panel') !== null`);
+  await client.waitFor(`document.body.innerText.includes('Cancel request')`);
+  await clickByText(client, 'Cancel request');
+  await client.waitFor(`document.body.innerText.includes('Request cancelled.')`);
+  await wait(pace(2_000));
+  completedSteps.push('Alice cancelled a pending outgoing request from the detail view');
+  if (shouldStopAfter('cancel')) {
+    await clearOverlay(client);
+    return completedSteps;
+  }
+
+  await showOverlay(
+    client,
+    'Step 8: Expired requests cannot be paid',
+    'The detail page shows expiration countdown information and blocks actions when the request is expired.',
+  );
+  logStep('Checking expired request detail');
+  await clickByText(client, 'Back to dashboard');
+  await client.waitFor(`document.querySelector('[data-testid="request-form"]') !== null`);
+  await setSelectValue(client, '.lists-grid section.panel:nth-of-type(2) select', 'EXPIRED');
+  await client.waitFor(`document.body.innerText.includes(${stringify(scenarioNotes.expired)})`);
+  await wait(pace(900));
   await clickInCard(client, scenarioNotes.expired, 'View details');
   await client.waitFor(`
     document.querySelector('.detail-panel') !== null &&
@@ -412,8 +628,11 @@ async function recordScenario(client) {
     throw new Error('Expired request unexpectedly exposed the Pay action');
   }
 
-  await wait(1_500);
+  await wait(pace(2_200));
   await client.captureScreenshot('05-expired-request-detail.png');
+  completedSteps.push('Alice opened an expired request detail and confirmed actions were blocked');
+  await clearOverlay(client);
+  return completedSteps;
 }
 
 async function startEncoderServer(frames) {
@@ -453,7 +672,7 @@ async function startEncoderServer(frames) {
                 image.src = 'data:image/jpeg;base64,' + frame;
                 await image.decode();
                 ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                await new Promise((resolve) => setTimeout(resolve, 420));
+                await new Promise((resolve) => setTimeout(resolve, ${presentationMode ? 520 : 220}));
               }
 
               recorder.stop();
@@ -565,12 +784,32 @@ async function launchBrowser() {
   return { client, processHandle };
 }
 
-function killProcess(child) {
-  if (!child || child.killed) {
+async function killProcess(child, label = 'process') {
+  if (!child) {
     return;
   }
 
+  if (child.killed || child.exitCode !== null) {
+    child.stdout?.destroy();
+    child.stderr?.destroy();
+    return;
+  }
+
+  const exited = new Promise((resolve) => {
+    child.once('exit', () => resolve());
+  });
+
   child.kill('SIGTERM');
+  await Promise.race([exited, wait(2_000)]);
+
+  if (child.exitCode === null && !child.killed) {
+    logStep(`Force killing ${label} after graceful shutdown timeout`);
+    child.kill('SIGKILL');
+    await Promise.race([exited, wait(1_000)]);
+  }
+
+  child.stdout?.destroy();
+  child.stderr?.destroy();
 }
 
 async function main() {
@@ -590,7 +829,7 @@ async function main() {
       cwd: rootDir,
       env: {
         ...process.env,
-        PORT: '3100',
+        PORT: backendPort,
         CORS_ORIGIN: frontendUrl,
         APP_BASE_URL: frontendUrl,
       },
@@ -599,7 +838,7 @@ async function main() {
     logStep('Starting frontend preview server');
     frontendProcess = startProcess(
       'node',
-      ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', '4173'],
+      ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', frontendPort],
       {
         cwd: frontendDir,
         env: {
@@ -626,12 +865,17 @@ async function main() {
     });
 
     logStep('Running UI scenario');
-    await recordScenario(client);
+    const completedSteps = await recordScenario(client);
     logStep('Stopping screencast capture');
     await client.send('Page.stopScreencast');
 
-    logStep('Encoding captured frames into WebM');
-    const videoPath = await encodeVideo(client);
+    let videoPath = null;
+    if (!skipVideoEncoding) {
+      logStep('Encoding captured frames into WebM');
+      videoPath = await encodeVideo(client);
+    } else {
+      logStep('Skipping video encoding for targeted validation run');
+    }
     const summaryPath = path.join(artifactsDir, 'summary.json');
 
     await fs.writeFile(
@@ -644,12 +888,7 @@ async function main() {
           },
           finishedAt: new Date().toISOString(),
           startedAt,
-          steps: [
-            'Alice created a new request for Bob',
-            'Bob paid the first request',
-            'Bob declined the second request',
-            'Alice opened an expired request detail and confirmed actions were blocked',
-          ],
+          steps: completedSteps,
         },
         null,
         2,
@@ -662,13 +901,17 @@ async function main() {
       await client.close().catch(() => {});
     }
 
-    killProcess(chromeProcess);
-    killProcess(frontendProcess);
-    killProcess(backendProcess);
+    await killProcess(chromeProcess, 'chrome');
+    await killProcess(frontendProcess, 'frontend');
+    await killProcess(backendProcess, 'backend');
   }
 }
 
-main().catch((error) => {
-  logError(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((error) => {
+    logError(error);
+    process.exit(1);
+  });

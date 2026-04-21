@@ -89,6 +89,19 @@ Automated E2E flow with video artifact:
 npm run e2e
 ```
 
+The end-to-end suite exercises the assignment-visible request lifecycle end to end:
+
+- sign in
+- incoming and outgoing dashboards
+- request creation
+- shareable link visibility
+- search and status filtering
+- request detail view
+- pay
+- decline
+- cancel
+- expired request blocking
+
 Generated artifacts:
 
 - `tests/e2e/artifacts/lovie-e2e-recording.webm`

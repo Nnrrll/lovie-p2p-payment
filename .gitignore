@@ -31,6 +31,7 @@ FINAL_SUBMISSION_EMAIL.md
 # E2E transient browser state
 tests/e2e/artifacts/chrome-profile/
 tests/e2e/chrome-smoke-profile/
+tests/e2e/artifacts-temp/
 
 # Root-level generated helper outputs
 db_verify.js
