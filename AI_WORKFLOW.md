@@ -74,6 +74,8 @@ Examples from this repo:
 - Real Postgres schema and seed verification was done before API smoke testing.
 - API smoke verification was done before React routing and dashboard work.
 - Backend tests were rewritten and cleaned before final delivery docs were updated.
+- Public deployment was smoke-tested after Render and Vercel went live to confirm login, request
+  creation, and successful payment behavior outside local development.
 
 ## Tools And Constraints
 

@@ -125,17 +125,18 @@ npm run build
 
 ## Fast Deploy Checklist
 
-### 1. Deploy PostgreSQL and API on Render
+### 1. Deploy PostgreSQL on Supabase and API on Render
 
-1. Create a managed PostgreSQL instance in Render.
-2. Create a new Web Service from this repository and point it to the repo root.
-3. Use the existing `render.yaml` or select `Dockerfile.api` as the runtime source.
-4. Set these environment variables:
-   - `DATABASE_URL=<Render Postgres internal or external URL>`
+1. Create a free PostgreSQL project in Supabase.
+2. Copy the pooled `DATABASE_URL` from the Supabase `Connect` screen.
+3. Create a new Render Web Service from this repository and point it to the repo root.
+4. Use the existing `render.yaml` or select `Dockerfile.api` as the runtime source.
+5. Set these environment variables:
+   - `DATABASE_URL=<Supabase pooled connection string>`
    - `DATABASE_SSL=true`
    - `CORS_ORIGIN=<your frontend url>`
    - `APP_BASE_URL=<your frontend url>`
-5. Deploy once and verify:
+6. Deploy once and verify:
    - `GET /health`
    - `GET /api/v1/auth/login` is not needed; use the app UI
 
@@ -151,6 +152,16 @@ npm run build
 
 - Frontend URL is `https://lovie-p2p-payment-beige.vercel.app`
 - Backend health URL is `https://lovie-p2p-payment-api.onrender.com/health`
+
+## Public Verification
+
+The deployed app was manually smoke-tested on the public environment:
+
+- Frontend URL opens publicly without Vercel auth
+- Backend `GET /health` returns `status: ok`
+- Live login works with seeded demo users
+- Live request creation works from Alice to Bob
+- Live payment flow completes successfully and final request status becomes `PAID`
 
 ## Spec-Kit Usage
 

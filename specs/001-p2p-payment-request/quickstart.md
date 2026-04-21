@@ -115,6 +115,17 @@ For hosted environments, the backend automatically applies `schema.sql` on start
 data only if the database is empty. This keeps Render-style deployments reviewer-ready without
 requiring a manual SQL bootstrap step.
 
+Public deployment for this repository now runs on:
+
+- Frontend: `https://lovie-p2p-payment-beige.vercel.app`
+- Backend health: `https://lovie-p2p-payment-api.onrender.com/health`
+
+Manual smoke verification completed on the public deployment for:
+
+- login
+- request creation
+- successful pay flow with final `PAID` status
+
 ## 8. Optional API Walkthrough
 
 If the reviewer prefers API-first validation, use the contract examples from
