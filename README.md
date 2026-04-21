@@ -1,9 +1,12 @@
 # Lovie P2P Payment Request
 
-Spec-Kit-driven implementation of the Lovie first interview assignment. The repo now contains a
-working Fastify and PostgreSQL backend, a React and Vite frontend that covers the full request
-money flow, automated backend verification, and a reviewer-friendly documentation package under
-`specs/001-p2p-payment-request/`.
+Spec-Kit-driven implementation of the Lovie first interview assignment. This repository is a
+working, AI-assisted assignment prototype delivered through rapid iteration around the core
+payment-request flows. It is intentionally a fast-moving, reviewer-ready build rather than a fully
+production-hardened final product, with the emphasis placed on correctness of the main flows,
+verification, and clear delivery artifacts. The repo now contains a working Fastify and PostgreSQL
+backend, a React and Vite frontend, automated verification, and a reviewer-friendly documentation
+package under `specs/001-p2p-payment-request/`.
 
 ## Project Overview
 
